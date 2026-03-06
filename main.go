@@ -1,0 +1,51 @@
+package main
+
+import (
+	"log"
+	"os"
+
+	"automation-developer-guide/src/config"
+	"automation-developer-guide/src/database"
+	"automation-developer-guide/src/routes"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+)
+
+func main() {
+	// Initialize configuration
+	config.Load()
+
+	// Connect to MongoDB
+	mongoURI := os.Getenv("MONGO_URI")
+	if mongoURI == "" && os.Getenv("ENV") == "development" {
+		mongoURI = "mongodb://localhost:27017"
+	}
+	dbName := os.Getenv("DB_NAME")
+	if dbName == "" {
+		dbName = "developer_guide_db"
+	}
+	if err := database.Connect(mongoURI, dbName); err != nil {
+		log.Fatal("Failed to connect to MongoDB:", err)
+	}
+
+	app := fiber.New()
+
+	// CORS: allow frontend origin (credentials for cookies/session)
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     config.ClientURL,
+		AllowCredentials: true,
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+	}))
+
+	// Routes
+	routes.Setup(app)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Printf("Server running at http://localhost:%s", port)
+	log.Fatal(app.Listen(":" + port))
+}

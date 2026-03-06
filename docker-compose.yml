@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: automation-developer-guide-api
+    env_file:
+      - .env
+    environment:
+      # Override Mongo URI to use the mongo service hostname inside the compose network
+      MONGO_URI: mongodb://mongo:27017
+      ENV: development
+    ports:
+      - "${PORT:-8080}:8080"
+    depends_on:
+      - mongo
+    networks:
+      - devnet
+
+  mongo:
+    image: mongo:7.0
+    container_name: automation-developer-guide-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - devnet
+
+volumes:
+  mongo_data:
+
+networks:
+  devnet:
+    driver: bridge

@@ -1,0 +1,48 @@
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/automation-developer-guide
+
+# Build output
+/bin/
+/dist/
+/build/
+
+# Go workspace and test
+*.test
+*.out
+go.work
+go.work.sum
+coverage.html
+coverage.out
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temp
+*.log
+tmp/
+temp/
+.cache/
+
+# Dependency and vendor (optional; uncomment if using vendoring)
+# vendor/
