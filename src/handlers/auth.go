@@ -222,6 +222,7 @@ func HandleLogout(c *fiber.Ctx) error {
 }
 
 func getCookieSettings() (string, bool) {
+	fmt.Println("ENV", os.Getenv("ENV"))
 	if os.Getenv("ENV") == "production" {
 		return "None", true
 	}
