@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"automation-developer-guide/src/config"
 	"automation-developer-guide/src/database"
@@ -32,11 +33,15 @@ func main() {
 	app := fiber.New()
 
 	// CORS: allow frontend origin (credentials for cookies/session)
-	app.Use(cors.New(cors.Config{
+	corsCfg := cors.Config{
 		AllowOrigins:     config.ClientURL,
 		AllowCredentials: true,
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
-	}))
+	}
+	if strings.EqualFold(strings.TrimSpace(os.Getenv("ENV")), "production") {
+		corsCfg.AllowOrigins = "https://workbench.ondc.tech"
+	}
+	app.Use(cors.New(corsCfg))
 
 	// Routes
 	routes.Setup(app)

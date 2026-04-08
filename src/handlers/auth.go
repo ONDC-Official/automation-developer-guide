@@ -18,16 +18,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-
-var (
-	samesite string
-	secure   bool
-)
-
-func init() {
-	samesite, secure = getCookieSettings()
-}
-
 // HandleHealth serves as a health check for the application
 func HandleHealth(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"status": "ok", "service": "automation-developer-guide"})
@@ -65,7 +55,7 @@ func HandleLogin(c *fiber.Ctx) error {
 	}
 
 	// 2. Save state in a short-lived cookie
-	
+	samesite, secure := getCookieSettings()
 
 	c.Cookie(&fiber.Cookie{
 		Name:     config.StateKey,
@@ -84,6 +74,8 @@ func HandleLogin(c *fiber.Ctx) error {
 
 // HandleCallback processes the response from GitHub
 func HandleCallback(c *fiber.Ctx) error {
+	samesite, secure := getCookieSettings()
+
 	// 1. Validate State (CSRF Protection)
 	storedState := c.Cookies(config.StateKey)
 	if storedState == "" {
@@ -210,6 +202,8 @@ func HandleCallback(c *fiber.Ctx) error {
 
 // HandleLogout clears the session
 func HandleLogout(c *fiber.Ctx) error {
+	samesite, secure := getCookieSettings()
+
 	c.Cookie(&fiber.Cookie{
 		Name:     "session_id",
 		Value:    "",
@@ -224,8 +218,8 @@ func HandleLogout(c *fiber.Ctx) error {
 }
 
 func getCookieSettings() (string, bool) {
-    if os.Getenv("ENV") == "production" {
-        return "None", true
-    }
-    return "Lax", false
+	if os.Getenv("ENV") == "production" {
+		return "None", true
+	}
+	return "Lax", false
 }
