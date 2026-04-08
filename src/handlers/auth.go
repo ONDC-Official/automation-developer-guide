@@ -4,9 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"automation-developer-guide/src/config"
@@ -58,7 +56,10 @@ func HandleLogin(c *fiber.Ctx) error {
 	}
 
 	// 2. Save state in a short-lived cookie
-	samesite, secure := getCookieSettings(c)
+	samesite, secure := getCookieSettings()
+
+	fmt.Println("samesite handle login", samesite)
+	fmt.Println("secure handle login", secure)
 
 	c.Cookie(&fiber.Cookie{
 		Name:     config.StateKey,
@@ -77,7 +78,7 @@ func HandleLogin(c *fiber.Ctx) error {
 
 // HandleCallback processes the response from GitHub
 func HandleCallback(c *fiber.Ctx) error {
-	samesite, secure := getCookieSettings(c)
+	samesite, secure := getCookieSettings()
 
 	// 1. Validate State (CSRF Protection)
 	storedState := c.Cookies(config.StateKey)
@@ -205,7 +206,7 @@ func HandleCallback(c *fiber.Ctx) error {
 
 // HandleLogout clears the session
 func HandleLogout(c *fiber.Ctx) error {
-	samesite, secure := getCookieSettings(c)
+	samesite, secure := getCookieSettings()
 
 	c.Cookie(&fiber.Cookie{
 		Name:     "session_id",
@@ -220,20 +221,9 @@ func HandleLogout(c *fiber.Ctx) error {
 	return c.Redirect(config.ClientURL, fiber.StatusSeeOther)
 }
 
-func getCookieSettings(c *fiber.Ctx) (string, bool) {
-	
-
+func getCookieSettings() (string, bool) {
 	if os.Getenv("ENV") == "production" {
-		// Cross-site requests (frontend origin differs from backend host) need None+Secure.
-		origin := strings.TrimSpace(c.Get("Origin"))
-		if origin != "" {
-			if parsedOrigin, err := url.Parse(origin); err == nil {
-				if !strings.EqualFold(parsedOrigin.Hostname(), c.Hostname()) {
-					fmt.Println("None is coming")
-					return "None", true
-				}
-			}
-		}
+		return "None", true
 	}
 
 	return "Lax", false
