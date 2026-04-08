@@ -27,7 +27,7 @@ jobs:
           rm -rf $REPO_DIR
 
           echo "Cloning fresh repo..."
-          git clone --branch main https://github.com/ONDC-Official/developer-guide.git $REPO_DIR
+          git clone --branch main https://github.com/ONDC-Official/automation-developer-guide.git $REPO_DIR
           EOF
 
       - name: Install Docker Compose (if missing)
