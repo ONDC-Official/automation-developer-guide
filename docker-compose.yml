@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: automation-developer-guide-api
     env_file:
       - .env
     environment:
@@ -21,7 +20,6 @@ services:
 
   mongo:
     image: mongo:7.0
-    container_name: automation-developer-guide-mongo
     restart: unless-stopped
     ports:
       - "27017:27017"
