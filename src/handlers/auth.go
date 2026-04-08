@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"automation-developer-guide/src/config"
@@ -58,9 +58,6 @@ func HandleLogin(c *fiber.Ctx) error {
 	// 2. Save state in a short-lived cookie
 	samesite, secure := getCookieSettings()
 
-	fmt.Println("samesite handle login", samesite)
-	fmt.Println("secure handle login", secure)
-
 	c.Cookie(&fiber.Cookie{
 		Name:     config.StateKey,
 		Value:    state,
@@ -68,7 +65,7 @@ func HandleLogin(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		// Domain:   ".ondc.tech",
+		Domain:   config.CookieDomain,
 		Path:     "/",
 	})
 
@@ -101,7 +98,7 @@ func HandleCallback(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		// Domain:   ".ondc.tech",
+		Domain:   config.CookieDomain,
 		Path:     "/",
 	})
 
@@ -200,7 +197,7 @@ func HandleCallback(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		// Domain:   ".ondc.tech",
+		Domain:   config.CookieDomain,
 		Path:     "/",
 	})
 
@@ -219,14 +216,14 @@ func HandleLogout(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
+		Domain:   config.CookieDomain,
 		Path:     "/",
 	})
 	return c.Redirect(config.ClientURL, fiber.StatusSeeOther)
 }
 
 func getCookieSettings() (string, bool) {
-	fmt.Println("ENV", os.Getenv("ENV"))
-	if os.Getenv("ENV") == "production" {
+	if strings.EqualFold(strings.TrimSpace(os.Getenv("ENV")), "production") {
 		return "None", true
 	}
 

@@ -37,6 +37,8 @@ func main() {
 		AllowOrigins:     config.ClientURL,
 		AllowCredentials: true,
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+		// cookie fix
+		AllowMethods:     "GET,POST,PUT,PATCH,DELETE,OPTIONS",
 	}
 	if strings.EqualFold(strings.TrimSpace(os.Getenv("ENV")), "production") {
 		corsCfg.AllowOrigins = "https://workbench.ondc.tech"

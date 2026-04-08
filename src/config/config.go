@@ -12,6 +12,8 @@ import (
 var (
 	OauthConfig *oauth2.Config
 	ClientURL   string
+	// cookie fix
+	CookieDomain string
 	JWTSecret   string
 	StateKey    = "oauth-state"
 )
@@ -40,4 +42,7 @@ func Load() {
 	if ClientURL == "" && os.Getenv("ENV") == "development" {
 		ClientURL = "http://localhost:3000"
 	}
+
+	// Optional cookie domain. Keep empty for host-only cookies.
+	CookieDomain = ".ondc.org"
 }
