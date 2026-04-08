@@ -18,6 +18,16 @@ import (
 	"golang.org/x/oauth2"
 )
 
+
+var (
+	samesite string
+	secure   bool
+)
+
+func init() {
+	samesite, secure = getCookieSettings()
+}
+
 // HandleHealth serves as a health check for the application
 func HandleHealth(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"status": "ok", "service": "automation-developer-guide"})
@@ -55,12 +65,15 @@ func HandleLogin(c *fiber.Ctx) error {
 	}
 
 	// 2. Save state in a short-lived cookie
+	
+
 	c.Cookie(&fiber.Cookie{
 		Name:     config.StateKey,
 		Value:    state,
 		Expires:  time.Now().Add(10 * time.Minute),
 		HTTPOnly: true,
-		Secure:   os.Getenv("ENV") == "production",
+		Secure:   secure,
+		SameSite: samesite,
 		Path:     "/",
 	})
 
@@ -89,7 +102,8 @@ func HandleCallback(c *fiber.Ctx) error {
 		Expires:  time.Now().Add(-time.Hour),
 		MaxAge:   -1,
 		HTTPOnly: true,
-		Secure:   os.Getenv("ENV") == "production",
+		Secure:   secure,
+		SameSite: samesite,
 		Path:     "/",
 	})
 
@@ -186,7 +200,8 @@ func HandleCallback(c *fiber.Ctx) error {
 		Value:    jwtToken,
 		Expires:  time.Now().Add(72 * time.Hour),
 		HTTPOnly: true,
-		Secure:   os.Getenv("ENV") == "production",
+		Secure:   secure,
+		SameSite: samesite,
 		Path:     "/",
 	})
 
@@ -201,8 +216,16 @@ func HandleLogout(c *fiber.Ctx) error {
 		Expires:  time.Now().Add(-time.Hour),
 		MaxAge:   -1,
 		HTTPOnly: true,
-		Secure:   os.Getenv("ENV") == "production",
+		Secure:   secure,
+		SameSite: samesite,
 		Path:     "/",
 	})
 	return c.Redirect(config.ClientURL, fiber.StatusSeeOther)
+}
+
+func getCookieSettings() (string, bool) {
+    if os.Getenv("ENV") == "production" {
+        return "None", true
+    }
+    return "Lax", false
 }
