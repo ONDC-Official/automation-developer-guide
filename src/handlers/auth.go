@@ -64,7 +64,6 @@ func HandleLogin(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		Domain:   "workbench.ondc.tech",
 		Path:     "/",
 	})
 
@@ -97,7 +96,6 @@ func HandleCallback(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		Domain:   "workbench.ondc.tech",
 		Path:     "/",
 	})
 
@@ -196,7 +194,6 @@ func HandleCallback(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		Domain:   "workbench.ondc.tech",
 		Path:     "/",
 	})
 
@@ -215,7 +212,6 @@ func HandleLogout(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		Domain:   "workbench.ondc.tech",
 		Path:     "/",
 	})
 	return c.Redirect(config.ClientURL, fiber.StatusSeeOther)
