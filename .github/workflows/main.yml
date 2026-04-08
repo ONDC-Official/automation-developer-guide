@@ -58,10 +58,10 @@ jobs:
           cat > $REPO_DIR/.env <<EOL
           PORT=8082
           ENV=production
-          echo "GITHUB_CLIENT_ID=${{ secrets.CLIENT_ID_GITHUB }}" >> \$REPO_DIR/.env
-          echo "GITHUB_CLIENT_SECRET=${{ secrets.CLIENT_SECRET_GITHUB }}" >> \$REPO_DIR/.env
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> \$REPO_DIR/.env
-          echo "GITHUB_REDIRECT_URL=${{ secrets.REDIRECT_URL_GITHUB }}" >> \$REPO_DIR/.env
+          GITHUB_CLIENT_ID=${{ secrets.CLIENT_ID_GITHUB }}
+          GITHUB_CLIENT_SECRET=${{ secrets.CLIENT_SECRET_GITHUB }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          GITHUB_REDIRECT_URL=${{ secrets.REDIRECT_URL_GITHUB }}
 
 
 
