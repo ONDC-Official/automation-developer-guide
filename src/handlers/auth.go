@@ -68,7 +68,7 @@ func HandleLogin(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		Domain:   ".ondc.tech",
+		// Domain:   ".ondc.tech",
 		Path:     "/",
 	})
 
@@ -82,15 +82,15 @@ func HandleCallback(c *fiber.Ctx) error {
 	samesite, secure := getCookieSettings()
 
 	// 1. Validate State (CSRF Protection)
-	// storedState := c.Cookies(config.StateKey)
-	// if storedState == "" {
-	// 	return c.Status(fiber.StatusBadRequest).SendString("State cookie not found")
-	// }
+	storedState := c.Cookies(config.StateKey)
+	if storedState == "" {
+		return c.Status(fiber.StatusBadRequest).SendString("State cookie not found")
+	}
 
-	// queryState := c.Query("state")
-	// if queryState != storedState {
-	// 	return c.Status(fiber.StatusBadRequest).SendString("Invalid state parameter")
-	// }
+	queryState := c.Query("state")
+	if queryState != storedState {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid state parameter")
+	}
 
 	// Remove state from session after validation
 	c.Cookie(&fiber.Cookie{
@@ -101,7 +101,7 @@ func HandleCallback(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		Domain:   ".ondc.tech",
+		// Domain:   ".ondc.tech",
 		Path:     "/",
 	})
 
@@ -200,7 +200,7 @@ func HandleCallback(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		Domain:   ".ondc.tech",
+		// Domain:   ".ondc.tech",
 		Path:     "/",
 	})
 
@@ -219,7 +219,6 @@ func HandleLogout(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		Domain:   ".ondc.tech",
 		Path:     "/",
 	})
 	return c.Redirect(config.ClientURL, fiber.StatusSeeOther)
