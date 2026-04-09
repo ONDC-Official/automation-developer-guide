@@ -14,8 +14,8 @@ var (
 	ClientURL   string
 	// cookie fix
 	CookieDomain string
-	JWTSecret   string
-	StateKey    = "oauth-state"
+	JWTSecret    string
+	StateKey     = "oauth-state"
 )
 
 func Load() {
@@ -43,6 +43,5 @@ func Load() {
 		ClientURL = "http://localhost:3000"
 	}
 
-	// Optional cookie domain. Keep empty for host-only cookies.
-	CookieDomain = ".ondc.org"
+	
 }

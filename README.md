@@ -43,11 +43,21 @@ Go backend for the ONDC developer guide app. Built with [Fiber](https://gofiber.
 - `main.go` – Entry point, Fiber app, CORS, route setup
 - `src/config/` – Config loading (e.g. from `.env`)
 - `src/database/` – MongoDB connection
-- `src/handlers/` – Auth, notes, comments handlers
-- `src/middleware/` – Auth middleware
-- `src/models/` – User, note, comment models
+- `src/handlers/` – Auth (OAuth2 & Token Exchange), notes, comments handlers
+- `src/middleware/` – Auth middleware (Bearer Token validation)
+- `src/models/` – User, note, comment, and exchange code models
 - `src/routes/` – Route registration
-- `src/utils/` – JWT and helpers
+- `src/utils/` – JWT, random state, and crypto helpers
+
+## Authentication Flow
+
+This project uses a **Secure Token Exchange Flow** for cross-domain authentication:
+
+1. **OAuth Redirect:** Backend redirects to frontend with a short-lived `code`.
+2. **Token Exchange:** Frontend calls `POST /auth/exchange` with the `code` to get a JWT.
+3. **Bearer Auth:** Frontend sends the JWT in the `Authorization: Bearer <token>` header for all subsequent requests.
+
+Cookies are not used for authorization, making the backend fully cross-origin compatible.
 
 ## License
 

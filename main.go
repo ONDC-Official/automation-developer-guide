@@ -30,6 +30,11 @@ func main() {
 		log.Fatal("Failed to connect to MongoDB:", err)
 	}
 
+	// 1.5 Ensure TTL index for exchange codes (expires after 5 minutes)
+	if err := database.EnsureTTLIndex("exchange_codes", "created_at", 300); err != nil {
+		log.Println("Warning: Failed to create TTL index for exchange_codes:", err)
+	}
+
 	app := fiber.New()
 
 	// CORS: allow frontend origin (credentials for cookies/session)

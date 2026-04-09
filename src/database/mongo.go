@@ -92,3 +92,18 @@ func Aggregate(collectionName string, pipeline interface{}, results interface{})
 
 	return cursor.All(ctx, results)
 }
+
+// EnsureTTLIndex creates a TTL index on a field that automatically deletes documents after a certain duration.
+func EnsureTTLIndex(collectionName string, fieldName string, expireAfterSeconds int32) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collection := GetCollection(collectionName)
+	indexModel := mongo.IndexModel{
+		Keys:    map[string]interface{}{fieldName: 1},
+		Options: options.Index().SetExpireAfterSeconds(expireAfterSeconds),
+	}
+
+	_, err := collection.Indexes().CreateOne(ctx, indexModel)
+	return err
+}

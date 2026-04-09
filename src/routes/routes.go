@@ -12,7 +12,8 @@ func Setup(app *fiber.App) {
 	app.Get("/", handlers.HandleHealth)
 	app.Get("/login", handlers.HandleLogin)
 	app.Get("/auth/github/callback", handlers.HandleCallback)
-	app.Get("/auth/logout", handlers.HandleLogout)
+	app.Post("/auth/exchange", handlers.HandleExchangeToken)
+	
 
 	// Comments (Public)
 	app.Get("api/comments", handlers.HandleGetComments)

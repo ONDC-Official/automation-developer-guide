@@ -65,7 +65,6 @@ func HandleLogin(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		Domain:   config.CookieDomain,
 		Path:     "/",
 	})
 
@@ -98,7 +97,6 @@ func HandleCallback(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   secure,
 		SameSite: samesite,
-		Domain:   config.CookieDomain,
 		Path:     "/",
 	})
 
@@ -189,38 +187,73 @@ func HandleCallback(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to generate token")
 	}
 
-	// 5. Set JWT in Cookie
-	c.Cookie(&fiber.Cookie{
-		Name:     "session_id",
-		Value:    jwtToken,
-		Expires:  time.Now().Add(72 * time.Hour),
-		HTTPOnly: true,
-		Secure:   secure,
-		SameSite: samesite,
-		Domain:   config.CookieDomain,
-		Path:     "/",
-	})
+	// 5. Generate and store an exchange code for secure token relay
+	exchangeCode, err := utils.GenerateRandomState()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to generate exchange code")
+	}
 
-	return c.Redirect(config.ClientURL, fiber.StatusSeeOther)
+	codeData := models.ExchangeCode{
+		Code:      exchangeCode,
+		JWTToken:  jwtToken,
+		CreatedAt: time.Now(),
+	}
+
+	if _, err := database.CreateOne("exchange_codes", codeData); err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to store exchange code")
+	}
+
+	// 6. Redirect with exchange code in query parameter
+	redirectURL := config.ClientURL
+	if strings.Contains(redirectURL, "?") {
+		redirectURL += "&code=" + exchangeCode
+	} else {
+		redirectURL += "?code=" + exchangeCode
+	}
+
+	return c.Redirect(redirectURL, fiber.StatusSeeOther)
 }
 
-// HandleLogout clears the session
-func HandleLogout(c *fiber.Ctx) error {
-	samesite, secure := getCookieSettings()
+// HandleExchangeToken exchanges a short-lived code for a JWT token
+func HandleExchangeToken(c *fiber.Ctx) error {
+	var body struct {
+		Code string `json:"code"`
+	}
 
-	c.Cookie(&fiber.Cookie{
-		Name:     "session_id",
-		Value:    "",
-		Expires:  time.Now().Add(-time.Hour),
-		MaxAge:   -1,
-		HTTPOnly: true,
-		Secure:   secure,
-		SameSite: samesite,
-		Domain:   config.CookieDomain,
-		Path:     "/",
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+	}
+
+	if body.Code == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "code is required"})
+	}
+
+	// 1. Find the exchange code in DB
+	filter := bson.M{"code": body.Code}
+	var codeData models.ExchangeCode
+
+	err := database.FindOne("exchange_codes", filter, &codeData)
+	if err == mongo.ErrNoDocuments {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid or expired code"})
+	} else if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
+	}
+
+	// 2. Check for expiration (e.g., 5 minutes)
+	if time.Since(codeData.CreatedAt) > 5*time.Minute {
+		database.DeleteOne("exchange_codes", filter)
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "code has expired"})
+	}
+
+	// 3. Success! Return the JWT and delete the exchange code (one-time use)
+	defer database.DeleteOne("exchange_codes", filter)
+
+	return c.JSON(fiber.Map{
+		"ok":    true,
+		"token": codeData.JWTToken,
 	})
-	return c.Redirect(config.ClientURL, fiber.StatusSeeOther)
 }
+
 
 func getCookieSettings() (string, bool) {
 	if strings.EqualFold(strings.TrimSpace(os.Getenv("ENV")), "production") {

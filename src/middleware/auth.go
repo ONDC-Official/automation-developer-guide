@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"automation-developer-guide/src/utils"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -9,12 +10,20 @@ import (
 // IsAuthenticated checks if the user is logged in by parsing the JWT from the session cookie.
 // This replaces the old AuthProxyMiddleware that made HTTP calls to the auth service.
 func IsAuthenticated(c *fiber.Ctx) error {
-	cookie := c.Cookies("session_id")
-	if cookie == "" {
+	// 1. Get token from Authorization header
+	authHeader := c.Get("Authorization")
+	if authHeader == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
 	}
 
-	claims, err := utils.ParseJWT(cookie)
+	// 2. Extract token from "Bearer <token>"
+	tokenParts := strings.Split(authHeader, " ")
+	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid authorization format"})
+	}
+	token := tokenParts[1]
+
+	claims, err := utils.ParseJWT(token)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token"})
 	}
