@@ -15,6 +15,7 @@ func Setup(app *fiber.App) {
 	app.Post("/auth/exchange", handlers.HandleExchangeToken)
 	
 
+	
 	// Comments (Public)
 	app.Get("api/comments", handlers.HandleGetComments)
 	app.Get("api/comments/:id", handlers.HandleGetCommentByID)
